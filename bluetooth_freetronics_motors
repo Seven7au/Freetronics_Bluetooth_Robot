@@ -1,0 +1,102 @@
+#include <Wire.h>
+#include <SoftwareSerial.h>
+SoftwareSerial bt(0,1); // RX, TX BlueTooth serial communication pins
+#define COMMAND_LEFT 'a'
+#define COMMAND_RIGHT 'd'
+#define COMMAND_FORWARD 'w'
+#define COMMAND_BACK 's'
+#define COMMAND_STOP ' '
+
+int motora1 = 4;
+int motora2 = 7;
+int motoraspeed = 6;
+int motorb1 = 3;
+int motorb2 = 2;
+int motorbspeed = 5;
+ 
+void setup()
+{
+  bt.begin(9600);//start the bluetooth serial port - send and recieve at 9600 baud
+
+  pinMode(motora1, OUTPUT);
+  pinMode(motora2, OUTPUT);
+  pinMode(motoraspeed, OUTPUT); 
+  pinMode(motorb1, OUTPUT);
+  pinMode(motorb2, OUTPUT);
+  pinMode(motorbspeed, OUTPUT);  
+}
+ 
+void allOff(int speed)
+// turns both motors off
+{
+  digitalWrite(motora1, LOW);
+  digitalWrite(motora2, LOW);
+  digitalWrite(motoraspeed, speed);
+  digitalWrite(motorb1, LOW);
+  digitalWrite(motorb2, LOW);
+  digitalWrite(motorbspeed, speed);  
+}
+ 
+void goForward(int speed)
+{
+  digitalWrite(motora1, HIGH);
+  digitalWrite(motora2, LOW);
+  digitalWrite(motoraspeed, speed);
+  digitalWrite(motorb1, HIGH);
+  digitalWrite(motorb2, LOW);
+  digitalWrite(motorbspeed, speed);  
+}
+ 
+void goBackward(int speed)
+{
+  digitalWrite(motora1, LOW);
+  digitalWrite(motora2, HIGH);
+  digitalWrite(motoraspeed, speed);
+  digitalWrite(motorb1, LOW);
+  digitalWrite(motorb2, HIGH);
+  digitalWrite(motorbspeed, speed); 
+}
+ 
+void turnRight(int speed)
+{
+  digitalWrite(motora1, LOW);
+  digitalWrite(motora2, HIGH);
+  digitalWrite(motoraspeed, speed);
+  digitalWrite(motorb1, HIGH);
+  digitalWrite(motorb2, LOW);
+  digitalWrite(motorbspeed, speed); 
+}
+ 
+void turnLeft(int speed)
+{
+  digitalWrite(motora1, HIGH);
+  digitalWrite(motora2, LOW);
+  digitalWrite(motoraspeed, speed);
+  digitalWrite(motorb1, LOW);
+  digitalWrite(motorb2, HIGH);
+  digitalWrite(motorbspeed, speed); 
+}
+ 
+void loop()
+{
+if(bt.available()) {
+char data = (char)bt.read();
+switch(data) {
+  case COMMAND_FORWARD:
+    goForward(255);  //not sure why, but as long as you have an integer in between the parentheses it works, but this doesn't change the speed.  
+    break; 
+  case COMMAND_BACK:
+    goBackward(255);
+    break;
+  case COMMAND_LEFT:
+    turnLeft(200);
+    break;
+  case COMMAND_RIGHT:
+    turnRight(200);
+    break;
+  case COMMAND_STOP:
+    allOff(0);
+    break;
+}
+}
+}
