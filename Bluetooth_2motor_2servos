@@ -1,0 +1,160 @@
+/* Code parts from Freetronics HBridge shield demonstration - http://www.freetronics.com.au/plus - plus code parts added from Orionrobots
+The serial communication and keyboard commands code was manipulated from code wriiten by Orionrobots
+The MIT License (MIT) Copyright (c) 2013 Orionrobots
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+The servo codeparts were written by the Oberon High School Programming Class 2015 adapted from the standard Arduino servo code
+*/
+#include <Servo.h>
+#include <Wire.h>
+#include <SoftwareSerial.h>
+SoftwareSerial bt(0,1); // RX, TX BlueTooth serial communication pins
+#define COMMAND_LEFT 'a'
+#define COMMAND_RIGHT 'd'
+#define COMMAND_FORWARD 'w'
+#define COMMAND_BACK 's'
+#define COMMAND_STOP ' '
+#define SERVO_LOW 'l'
+#define SERVO_MID 'm'
+#define SERVO_HIGH 'h'
+
+Servo myservo1, myservo2;  // create servo object to control a servo 
+                // twelve servo objects can be created on most boards
+
+int motora1 = 4;
+int motora2 = 7;
+int motoraspeed = 6;
+int motorb1 = 3;
+int motorb2 = 2;
+int motorbspeed = 5;
+ 
+void setup()
+{
+  
+  bt.begin(9600);//start the bluetooth serial port - send and recieve at 9600 baud
+
+  pinMode(motora1, OUTPUT);
+  pinMode(motora2, OUTPUT);
+  pinMode(motoraspeed, OUTPUT); 
+  pinMode(motorb1, OUTPUT);
+  pinMode(motorb2, OUTPUT);
+  pinMode(motorbspeed, OUTPUT);  
+  
+  myservo1.attach(9);  // attaches servo1 on pin 9 to the servo object 
+  myservo2.attach(8); // attaches servo2 on pin 8 to the servo object 
+}
+ 
+void myservo_low()//sets the servos to the 'low' position (1 and 2 are opposite to ensure symmetry when mounted) 
+{
+  myservo1.write(0);
+  myservo2.write(180);
+    delay(1000);        
+}
+void myservo_mid()//sets both servos to the 'mid' position
+{
+  myservo1.write(90);
+  myservo2.write(90);
+  delay(1000);
+}
+void myservo_high()
+{
+  myservo1.write(180);//sets the servos to the 'high' position
+  myservo2.write(0);
+  delay(1000);
+}
+
+void allOff(int speed)// turns both motors off
+{
+  digitalWrite(motora1, LOW);
+  digitalWrite(motora2, LOW);
+  digitalWrite(motoraspeed, speed);
+  digitalWrite(motorb1, LOW);
+  digitalWrite(motorb2, LOW);
+  digitalWrite(motorbspeed, speed);  
+}
+ 
+void goForward(int speed)//powers both motors 'forward' - you need to make sure that you have your motors connected correctly 
+{
+  digitalWrite(motora1, HIGH);
+  digitalWrite(motora2, LOW);
+  digitalWrite(motoraspeed, speed);
+  digitalWrite(motorb1, HIGH);
+  digitalWrite(motorb2, LOW);
+  digitalWrite(motorbspeed, speed);  
+}
+ 
+void goBackward(int speed)//powers both motors 'backward'
+{
+  digitalWrite(motora1, LOW);
+  digitalWrite(motora2, HIGH);
+  digitalWrite(motoraspeed, speed);
+  digitalWrite(motorb1, LOW);
+  digitalWrite(motorb2, HIGH);
+  digitalWrite(motorbspeed, speed); 
+}
+ 
+void turnRight(int speed)//powers one motor forward and one back to make the vehicle turn right
+{
+  digitalWrite(motora1, LOW);
+  digitalWrite(motora2, HIGH);
+  digitalWrite(motoraspeed, speed);
+  digitalWrite(motorb1, HIGH);
+  digitalWrite(motorb2, LOW);
+  digitalWrite(motorbspeed, speed); 
+}
+ 
+void turnLeft(int speed)//powers one motor back and one forward to make the vehicle turn left
+{
+  digitalWrite(motora1, HIGH);
+  digitalWrite(motora2, LOW);
+  digitalWrite(motoraspeed, speed);
+  digitalWrite(motorb1, LOW);
+  digitalWrite(motorb2, HIGH);
+  digitalWrite(motorbspeed, speed); 
+}
+ 
+void loop()
+{
+if(bt.available()) {
+char data = (char)bt.read();//listen for and read the ASCII character and make the appropriate switch
+switch(data) {
+  case COMMAND_FORWARD:
+    goForward(255); 
+    break; 
+  case COMMAND_BACK:
+    goBackward(255);
+    break;
+  case COMMAND_LEFT:
+    turnLeft(200);
+    break;
+  case COMMAND_RIGHT:
+    turnRight(200);
+    break;
+  case COMMAND_STOP:
+    allOff(0);
+    break;
+   case SERVO_LOW:
+    myservo_low();
+    break;
+  case SERVO_MID:
+    myservo_mid();
+    break;
+  case SERVO_HIGH:
+    myservo_high();
+    break;
+}
+}
+}
